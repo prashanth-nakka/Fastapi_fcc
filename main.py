@@ -17,13 +17,17 @@ class Post(BaseModel):
 # Sample data source for CRUD operations
 
 posts_data = [{
-    "Title": "sports",
-    "Content": "Cricket, Foot ball, Base Ball",
+    "title": "Sports",
+    "content": "Cricket, Foot ball, Base Ball",
     "id": 1
 }, {
-    "Title": "Programming Languages",
-    "Content": "Python, Java, C#",
+    "title": "Programming Languages",
+    "content": "Python, Java, C#",
     "id": 2
+}, {
+    "title": "Food",
+    "content": "Pizza, Biryani, Tandoori",
+    "id": 3
 }]
 
 
@@ -34,7 +38,7 @@ def find_postById(id):
             return p
 
 
-def fing_index_id(id):
+def find_index_id(id):
     '''returns index of the posts if id == posts['id']'''
     for i, p in enumerate(posts_data):
         if p['id'] == id:
@@ -52,6 +56,19 @@ async def root():
 def get_posts():
     '''returns all the posts fom the data source'''
     return {"data": f"{posts_data}"}
+
+
+# UPDATE METHODS
+@app.put('/posts/{id}')
+def update_posts(id: int, post: Post):
+    index = find_index_id(id)
+    if not index:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Post: {id} does not exists")
+    post_dict = post.dict()
+    post_dict['id'] = id
+    posts_data[index] = post_dict
+    return {"data": post_dict}
 
 
 @app.get('/posts/latest')
@@ -91,7 +108,7 @@ def create_post(post: Post):
 @app.delete('/posts/{id}', status_code=status.HTTP_204_NO_CONTENT)
 def delete_posts(id: int):
     '''Deletes the Posts based on the Id provided'''
-    index = fing_index_id(id)
+    index = find_index_id(id)
     if not index:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Post: {id} does not exists")

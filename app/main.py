@@ -17,7 +17,7 @@ while True:
                                 user='postgres',
                                 password='12345',
                                 cursor_factory=RealDictCursor)
-        cursor = conn.cursor
+        cursor = conn.cursor()
         print("Database Connected!")
         break
     except Exception as error:
@@ -33,29 +33,29 @@ class Post(BaseModel):
     # optional fileds
     rating: Optional[int] = None
 
-
 # Sample data source for CRUD operations
 
-posts_data = [{
-    "title": "Sports",
-    "content": "Cricket, Foot ball, Base Ball",
-    "id": 1
-}, {
-    "title": "Programming Languages",
-    "content": "Python, Java, C#",
-    "id": 2
-}, {
-    "title": "Food",
-    "content": "Pizza, Biryani, Tandoori",
-    "id": 3
-}]
+# posts_data = [{
+#     "title": "Sports",
+#     "content": "Cricket, Foot ball, Base Ball",
+#     "id": 1
+# }, {
+#     "title": "Programming Languages",
+#     "content": "Python, Java, C#",
+#     "id": 2
+# }, {
+#     "title": "Food",
+#     "content": "Pizza, Biryani, Tandoori",
+#     "id": 3
+# }]
 
 
 def find_postById(id):
     '''returns the posts which is found by the id provided'''
-    for p in posts_data:
-        if p["id"] == id:
-            return p
+    cursor.execute()
+    # for p in posts_data:
+    #     if p["id"] == id:
+    #         return p
 
 
 def find_index_id(id):

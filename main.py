@@ -34,6 +34,13 @@ def find_postById(id):
             return p
 
 
+def fing_index_id(id):
+    '''returns index of the posts if id == posts['id']'''
+    for i, p in enumerate(posts_data):
+        if p['id'] == id:
+            return i
+
+
 # sample decorator
 @app.get('/')
 async def root():
@@ -78,3 +85,15 @@ def create_post(post: Post):
     posts_data.append(post_dict)
     # print(post.dict())   for printing in the form of DICT() Format
     return {"new_post": post_dict}
+
+
+# DELETE METHODS
+@app.delete('/posts/{id}', status_code=status.HTTP_204_NO_CONTENT)
+def delete_posts(id: int):
+    '''Deletes the Posts based on the Id provided'''
+    index = fing_index_id(id)
+    if not index:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Post: {id} does not exists")
+    posts_data.pop(index)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -144,7 +144,7 @@ def delete_posts(id: int):
     '''Deletes the Posts based on the Id provided'''
     cursor.execute(""" DELETE FROM posts WHERE id = %s RETURNING * """,
                    (str(id), ))
-    delete_post = cursor.fetchone
+    delete_post = cursor.fetchone()
     # *** Committing the changes to Data Source
     conn.commit()
     if not delete_post:

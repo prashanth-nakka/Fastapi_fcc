@@ -8,6 +8,7 @@ import time
 from .schemas import *
 from sqlalchemy.orm import Session
 from . import models
+from .utlis import hash
 from .database import engine, get_db
 
 models.Base.metadata.create_all(bind=engine)
@@ -71,6 +72,7 @@ async def root():
 # def test_db(db: Session = Depends(get_db)):
 #     posts = db.query(models.Post).all()
 #     return {"data": posts}
+''' POSTS MODULE '''
 
 
 # GET METHODS
@@ -203,12 +205,29 @@ def delete_posts(id: int, db: Session = Depends(get_db)):
         return err
 
 
+'''USER MODULE'''
+
+
 @app.post('/users',
           status_code=status.HTTP_201_CREATED,
           response_model=UserOut)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
+    '''Creates New User'''
+    # hashed password = user.password
+    hashed_password = hash(user.password)
+    user.password = hashed_password
+
     new_user = models.User(**user.dict())
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
     return new_user
+
+
+@app.get('/users/{id}', response_model=UserOut)
+def get_user(id: int, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"{id} user not found")
+    return user

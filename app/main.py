@@ -128,10 +128,10 @@ def get_latest_post():
 
 
 @app.get('/posts/{id}')
-def get_postsById(id: int, response: Response):
+def get_postsById(id: int, response: Response, db: Session = Depends(get_db)):
     '''returns posts based on Id provided'''
-    cursor.execute(""" SELECT * FROM posts WHERE id = %s """, (str(id), ))
-    post = cursor.fetchone()
+    # cursor.execute(""" SELECT * FROM posts WHERE id = %s """, (str(id), ))
+    # post = cursor.fetchone()
     # print(post_test)
     # post = find_postById(id)
     # if not post:
@@ -139,10 +139,12 @@ def get_postsById(id: int, response: Response):
     #     return {"message": f"Post with {id} not found"}
     # else:
     #     return {"Post_detail": f"Post: {post}"}
+    '''using ORM'''
+    post = db.query(models.Post).filter(models.Post.id == id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Post with {id} not found")
-    return {"Post_detail": f"Post: {post}"}
+                            detail=f"Post: {id} not found")
+    return {"Post_detail": {post}}
 
 
 # POST METHODS

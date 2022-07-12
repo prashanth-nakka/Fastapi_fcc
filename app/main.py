@@ -100,23 +100,28 @@ def get_posts(db: Session = Depends(get_db)):
 
 # UPDATE METHODS
 @app.put('/posts/{id}')
-def update_posts(id: int, post: Post):
-    '''Updates the existing post by the specified id'''
-    cursor.execute(
-        """ UPDATE posts SET title = %s, content = %s, published = %s WHERE id = %s RETURNING * """,
-        (
-            post.title,
-            post.content,
-            post.published,
-            str(id),
-        ))
-    updated_post = cursor.fetchone()
-    # for updating in the Data Source
-    conn.commit()
-    if not updated_post:
+def update_posts(id: int, post: Post, db: Session = Depends(get_db)):
+    # '''Updates the existing post by the specified id'''
+    # cursor.execute(
+    #     """ UPDATE posts SET title = %s, content = %s, published = %s WHERE id = %s RETURNING * """,
+    #     (
+    #         post.title,
+    #         post.content,
+    #         post.published,
+    #         str(id),
+    #     ))
+    # updated_post = cursor.fetchone()
+    # # for updating in the Data Source
+    # conn.commit()
+    '''uisng ORM'''
+    post_query = db.query(models.Post).filter(models.Post.id == id)
+    actual_post = post_query.first()
+    if not actual_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Post: {id} does not exists")
-    return {"data": updated_post}
+    post_query.update(post.dict(), synchronize_session=False)
+    db.commit()
+    return {"data": post_query.first()}
 
 
 @app.get('/posts/latest')

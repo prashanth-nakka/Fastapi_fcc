@@ -53,7 +53,6 @@ posts_data = [{
 
 def find_postById(id):
     '''returns the posts which is found by the id provided'''
-    cursor.execute()
     for p in posts_data:
         if p["id"] == id:
             return p
@@ -105,7 +104,10 @@ def get_latest_post():
 @app.get('/posts/{id}')
 def get_postsById(id: int, response: Response):
     '''returns posts based on Id provided'''
-    post = find_postById(id)
+    cursor.execute(""" SELECT * FROM posts WHERE id = %s """, (str(id), ))
+    post = cursor.fetchone()
+    # print(post_test)
+    # post = find_postById(id)
     # if not post:
     #     response.status_code = status.HTTP_404_NOT_FOUND
     #     return {"message": f"Post with {id} not found"}

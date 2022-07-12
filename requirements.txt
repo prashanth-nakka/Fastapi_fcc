@@ -1,0 +1,3 @@
+fastapi[full]
+psycopg2
+sqlalchemy

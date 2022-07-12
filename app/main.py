@@ -109,11 +109,14 @@ def get_postsById(id: int, response: Response, db: Session = Depends(get_db)):
     # else:
     #     return {"Post_detail": f"Post: {post}"}
     '''using ORM'''
-    post = db.query(models.Post).filter(models.Post.id == id).first()
-    if not post:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Post: {id} not found")
-    return {"Post_detail": {post}}
+    try:
+        post = db.query(models.Post).filter(models.Post.id == id).first()
+        if not post:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Post: {id} not found")
+        return post
+    except Exception as err:
+        return err
 
 
 # POST METHODS
@@ -134,12 +137,15 @@ def create_post(post: CreatePost, db: Session = Depends(get_db)):
     # # print(post.dict())   for printing in the form of DICT() Format
     # return {"new_post": post_dict}
     '''using ORM'''
-    new_post = models.Post(**post.dict())
-    db.add(new_post)  # To add a new record to the Data Source
-    db.commit()
-    db.refresh(
-        new_post)  # To display the newly added record/post in Data Source
-    return {"data": new_post}
+    try:
+        new_post = models.Post(**post.dict())
+        db.add(new_post)  # To add a new record to the Data Source
+        db.commit()
+        db.refresh(
+            new_post)  # To display the newly added record/post in Data Source
+        return new_post
+    except Exception as err:
+        return err
 
 
 # UPDATE METHODS
@@ -158,14 +164,17 @@ def update_posts(id: int, post: UpdatePost, db: Session = Depends(get_db)):
     # # for updating in the Data Source
     # conn.commit()
     '''uisng ORM'''
-    post_query = db.query(models.Post).filter(models.Post.id == id)
-    actual_post = post_query.first()
-    if not actual_post:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Post: {id} does not exists")
-    post_query.update(post.dict(), synchronize_session=False)
-    db.commit()
-    return {"data": post_query.first()}
+    try:
+        post_query = db.query(models.Post).filter(models.Post.id == id)
+        actual_post = post_query.first()
+        if not actual_post:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Post: {id} does not exists")
+        post_query.update(post.dict(), synchronize_session=False)
+        db.commit()
+        return post_query.first()
+    except Exception as err:
+        return err
 
 
 # DELETE METHODS
@@ -179,10 +188,13 @@ def delete_posts(id: int, db: Session = Depends(get_db)):
     # conn.commit()
     '''using ORM'''
     # query to select 1 record specified by Id from end-user
-    post = db.query(models.Post).filter(models.Post.id == id)
-    if not post.first():
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Post: {id} does not exists")
-    post.delete(synchronize_session=False)
-    db.commit()  # To make changes in Data Source
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    try:
+        post = db.query(models.Post).filter(models.Post.id == id)
+        if not post.first():
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Post: {id} does not exists")
+        post.delete(synchronize_session=False)
+        db.commit()  # To make changes in Data Source
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except Exception as err:
+        return err

@@ -31,6 +31,7 @@ while True:
         time.sleep(2)
 
 
+# Schema
 class Post(BaseModel):
     title: str
     content: str
@@ -146,16 +147,23 @@ def get_postsById(id: int, response: Response):
 
 # POST METHODS
 @app.post('/posts', status_code=status.HTTP_201_CREATED)
-def create_post(post: Post):
+def create_post(post: Post, db: Session = Depends(get_db)):
     '''loads/appends the newly created posts to the data source'''
-    cursor.execute(
-        """INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING * """,
-        (post.title, post.content, post.published))
-    # for returning only one record which we created
-    new_post = cursor.fetchone()
-    # for pushing the new changes to the data source, for saving the created post
-    conn.commit()
+    '''using ORM'''
+    new_post = models.Post(**post.dict())
+    db.add(new_post)  # To add a new record to the Data Source
+    db.commit()
+    db.refresh(
+        new_post)  # To display the newly added record/post in Data Source
     return {"data": new_post}
+    # cursor.execute(
+    #     """INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING * """,
+    #     (post.title, post.content, post.published))
+    # # for returning only one record which we created
+    # new_post = cursor.fetchone()
+    # # for pushing the new changes to the data source, for saving the created post
+    # conn.commit()
+    # return {"data": new_post}
     # post_dict = post.dict()
     # post_dict['id'] = randrange(0, 10000)
     # posts_data.append(post_dict)

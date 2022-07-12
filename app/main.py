@@ -175,14 +175,19 @@ def create_post(post: Post, db: Session = Depends(get_db)):
 
 # DELETE METHODS
 @app.delete('/posts/{id}', status_code=status.HTTP_204_NO_CONTENT)
-def delete_posts(id: int):
+def delete_posts(id: int, db: Session = Depends(get_db)):
     '''Deletes the Posts based on the Id provided'''
-    cursor.execute(""" DELETE FROM posts WHERE id = %s RETURNING * """,
-                   (str(id), ))
-    delete_post = cursor.fetchone()
-    # *** Committing the changes to Data Source
-    conn.commit()
-    if not delete_post:
+    # cursor.execute(""" DELETE FROM posts WHERE id = %s RETURNING * """,
+    #                (str(id), ))
+    # delete_post = cursor.fetchone()
+    # # *** Committing the changes to Data Source
+    # conn.commit()
+    '''using ORM'''
+    # query to select 1 record specified by Id from end-user
+    post = db.query(models.Post).filter(models.Post.id == id)
+    if not post.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Post: {id} does not exists")
+    post.delete(synchronize_session=False)
+    db.commit()  # To make changes in Data Source
     return Response(status_code=status.HTTP_204_NO_CONTENT)

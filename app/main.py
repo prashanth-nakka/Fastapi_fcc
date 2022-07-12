@@ -2,9 +2,9 @@
 # from random import randrange
 from fastapi import Depends, FastAPI, Response, status, HTTPException
 import psycopg2
-from pydantic import BaseModel
 from psycopg2.extras import RealDictCursor
 import time
+from .schemas import *
 from sqlalchemy.orm import Session
 from . import models
 from .database import engine, get_db
@@ -29,16 +29,6 @@ while True:
         print("Connecting to Database Failed!")
         print("Error was ", error)
         time.sleep(2)
-
-
-# Schema
-class Post(BaseModel):
-    title: str
-    content: str
-    published: bool = True
-    # optional fileds
-    # rating: Optional[int] = None
-
 
 # Sample data source for CRUD operations
 
@@ -128,7 +118,7 @@ def get_postsById(id: int, response: Response, db: Session = Depends(get_db)):
 
 # POST METHODS
 @app.post('/posts', status_code=status.HTTP_201_CREATED)
-def create_post(post: Post, db: Session = Depends(get_db)):
+def create_post(post: CreatePost, db: Session = Depends(get_db)):
     '''loads/appends the newly created posts to the data source'''
     # cursor.execute(
     #     """INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING * """,
@@ -154,7 +144,7 @@ def create_post(post: Post, db: Session = Depends(get_db)):
 
 # UPDATE METHODS
 @app.put('/posts/{id}')
-def update_posts(id: int, post: Post, db: Session = Depends(get_db)):
+def update_posts(id: int, post: UpdatePost, db: Session = Depends(get_db)):
     '''Updates the existing post by the specified id'''
     # cursor.execute(
     #     """ UPDATE posts SET title = %s, content = %s, published = %s WHERE id = %s RETURNING * """,

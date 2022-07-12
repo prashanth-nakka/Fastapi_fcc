@@ -8,6 +8,7 @@ import time
 from .schemas import *
 from sqlalchemy.orm import Session
 from . import models
+from .utlis import hash
 from .database import engine, get_db
 
 models.Base.metadata.create_all(bind=engine)
@@ -207,6 +208,11 @@ def delete_posts(id: int, db: Session = Depends(get_db)):
           status_code=status.HTTP_201_CREATED,
           response_model=UserOut)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
+    '''Creates New User'''
+    # hashed password = user.password
+    hashed_password = hash(user.password)
+    user.password = hashed_password
+    
     new_user = models.User(**user.dict())
     db.add(new_user)
     db.commit()

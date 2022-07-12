@@ -33,29 +33,30 @@ class Post(BaseModel):
     # optional fileds
     rating: Optional[int] = None
 
+
 # Sample data source for CRUD operations
 
-# posts_data = [{
-#     "title": "Sports",
-#     "content": "Cricket, Foot ball, Base Ball",
-#     "id": 1
-# }, {
-#     "title": "Programming Languages",
-#     "content": "Python, Java, C#",
-#     "id": 2
-# }, {
-#     "title": "Food",
-#     "content": "Pizza, Biryani, Tandoori",
-#     "id": 3
-# }]
+posts_data = [{
+    "title": "Sports",
+    "content": "Cricket, Foot ball, Base Ball",
+    "id": 1
+}, {
+    "title": "Programming Languages",
+    "content": "Python, Java, C#",
+    "id": 2
+}, {
+    "title": "Food",
+    "content": "Pizza, Biryani, Tandoori",
+    "id": 3
+}]
 
 
 def find_postById(id):
     '''returns the posts which is found by the id provided'''
     cursor.execute()
-    # for p in posts_data:
-    #     if p["id"] == id:
-    #         return p
+    for p in posts_data:
+        if p["id"] == id:
+            return p
 
 
 def find_index_id(id):
@@ -75,7 +76,10 @@ async def root():
 @app.get('/posts')
 def get_posts():
     '''returns all the posts fom the data source'''
-    return {"data": f"{posts_data}"}
+    cursor.execute("""SELECT * FROM posts""")
+    posts = cursor.fetchall()
+    return posts
+    # return {"data": f"{posts_data}"}
 
 
 # UPDATE METHODS

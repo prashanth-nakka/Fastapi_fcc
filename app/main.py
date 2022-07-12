@@ -1,5 +1,6 @@
 # from typing import Optional
 # from random import randrange
+from typing import List
 from fastapi import Depends, FastAPI, Response, status, HTTPException
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -73,7 +74,7 @@ async def root():
 
 
 # GET METHODS
-@app.get('/posts')
+@app.get('/posts', response_model=List[user_response])
 def get_posts(db: Session = Depends(get_db)):
     '''returns all the posts fom the data source'''
     # cursor.execute("""SELECT * FROM posts""")
@@ -96,7 +97,7 @@ def get_posts(db: Session = Depends(get_db)):
 #     return {"data": latest_post}
 
 
-@app.get('/posts/{id}')
+@app.get('/posts/{id}', response_model=user_response)
 def get_postsById(id: int, response: Response, db: Session = Depends(get_db)):
     '''returns posts based on Id provided'''
     # cursor.execute(""" SELECT * FROM posts WHERE id = %s """, (str(id), ))
@@ -120,7 +121,9 @@ def get_postsById(id: int, response: Response, db: Session = Depends(get_db)):
 
 
 # POST METHODS
-@app.post('/posts', status_code=status.HTTP_201_CREATED)
+@app.post('/posts',
+          status_code=status.HTTP_201_CREATED,
+          response_model=user_response)
 def create_post(post: CreatePost, db: Session = Depends(get_db)):
     '''loads/appends the newly created posts to the data source'''
     # cursor.execute(
@@ -149,7 +152,7 @@ def create_post(post: CreatePost, db: Session = Depends(get_db)):
 
 
 # UPDATE METHODS
-@app.put('/posts/{id}')
+@app.put('/posts/{id}', response_model=user_response)
 def update_posts(id: int, post: UpdatePost, db: Session = Depends(get_db)):
     '''Updates the existing post by the specified id'''
     # cursor.execute(

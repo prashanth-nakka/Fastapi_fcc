@@ -1,10 +1,15 @@
-from typing import Optional
-from fastapi import FastAPI, Response, status, HTTPException
+# from typing import Optional
+# from random import randrange
+from fastapi import Depends, FastAPI, Response, status, HTTPException
 import psycopg2
 from pydantic import BaseModel
-from random import randrange
 from psycopg2.extras import RealDictCursor
 import time
+from sqlalchemy.orm import Session
+from . import models
+from .database import engine, get_db
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -36,39 +41,43 @@ class Post(BaseModel):
 
 # Sample data source for CRUD operations
 
-posts_data = [{
-    "title": "Sports",
-    "content": "Cricket, Foot ball, Base Ball",
-    "id": 1
-}, {
-    "title": "Programming Languages",
-    "content": "Python, Java, C#",
-    "id": 2
-}, {
-    "title": "Food",
-    "content": "Pizza, Biryani, Tandoori",
-    "id": 3
-}]
+# posts_data = [{
+#     "title": "Sports",
+#     "content": "Cricket, Foot ball, Base Ball",
+#     "id": 1
+# }, {
+#     "title": "Programming Languages",
+#     "content": "Python, Java, C#",
+#     "id": 2
+# }, {
+#     "title": "Food",
+#     "content": "Pizza, Biryani, Tandoori",
+#     "id": 3
+# }]
 
+# def find_postById(id):
+#     '''returns the posts which is found by the id provided'''
+#     for p in posts_data:
+#         if p["id"] == id:
+#             return p
 
-def find_postById(id):
-    '''returns the posts which is found by the id provided'''
-    for p in posts_data:
-        if p["id"] == id:
-            return p
-
-
-def find_index_id(id):
-    '''returns index of the posts if id == posts['id']'''
-    for i, p in enumerate(posts_data):
-        if p['id'] == id:
-            return i
+# def find_index_id(id):
+#     '''returns index of the posts if id == posts['id']'''
+#     for i, p in enumerate(posts_data):
+#         if p['id'] == id:
+#             return i
 
 
 # sample decorator
 @app.get('/')
 async def root():
     pass
+
+
+# Testing_route(sqlalchemy)
+@app.get('/sqlalchemy')
+def test_db(db: Session = Depends(get_db)):
+    return {"status": "Success"}
 
 
 # GET METHODS
@@ -105,8 +114,9 @@ def update_posts(id: int, post: Post):
 @app.get('/posts/latest')
 def get_latest_post():
     '''returns latest posts from the data source'''
-    post = posts_data[len(posts_data) - 1]  # indexing
-    return {"Latest Post": post}
+    cursor.execute("""SELECT * FROM posts ORDER BY created_at desc""")
+    latest_post = cursor.fetchone()
+    return {"data": latest_post}
 
 
 @app.get('/posts/{id}')

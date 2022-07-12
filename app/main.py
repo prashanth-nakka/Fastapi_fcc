@@ -1,10 +1,15 @@
-from typing import Optional
-from fastapi import FastAPI, Response, status, HTTPException
+# from typing import Optional
+# from random import randrange
+from fastapi import Depends, FastAPI, Response, status, HTTPException
 import psycopg2
 from pydantic import BaseModel
-from random import randrange
 from psycopg2.extras import RealDictCursor
 import time
+from sqlalchemy.orm import Session
+from . import models
+from .database import engine, get_db
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -26,6 +31,7 @@ while True:
         time.sleep(2)
 
 
+# Schema
 class Post(BaseModel):
     title: str
     content: str
@@ -36,33 +42,31 @@ class Post(BaseModel):
 
 # Sample data source for CRUD operations
 
-posts_data = [{
-    "title": "Sports",
-    "content": "Cricket, Foot ball, Base Ball",
-    "id": 1
-}, {
-    "title": "Programming Languages",
-    "content": "Python, Java, C#",
-    "id": 2
-}, {
-    "title": "Food",
-    "content": "Pizza, Biryani, Tandoori",
-    "id": 3
-}]
+# posts_data = [{
+#     "title": "Sports",
+#     "content": "Cricket, Foot ball, Base Ball",
+#     "id": 1
+# }, {
+#     "title": "Programming Languages",
+#     "content": "Python, Java, C#",
+#     "id": 2
+# }, {
+#     "title": "Food",
+#     "content": "Pizza, Biryani, Tandoori",
+#     "id": 3
+# }]
 
+# def find_postById(id):
+#     '''returns the posts which is found by the id provided'''
+#     for p in posts_data:
+#         if p["id"] == id:
+#             return p
 
-def find_postById(id):
-    '''returns the posts which is found by the id provided'''
-    for p in posts_data:
-        if p["id"] == id:
-            return p
-
-
-def find_index_id(id):
-    '''returns index of the posts if id == posts['id']'''
-    for i, p in enumerate(posts_data):
-        if p['id'] == id:
-            return i
+# def find_index_id(id):
+#     '''returns index of the posts if id == posts['id']'''
+#     for i, p in enumerate(posts_data):
+#         if p['id'] == id:
+#             return i
 
 
 # sample decorator
@@ -71,13 +75,26 @@ async def root():
     pass
 
 
+# Testing_route(sqlalchemy)
+# @app.get('/sqlalchemy')
+# def test_db(db: Session = Depends(get_db)):
+#     posts = db.query(models.Post).all()
+#     return {"data": posts}
+
+
 # GET METHODS
 @app.get('/posts')
-def get_posts():
+def get_posts(db: Session = Depends(get_db)):
     '''returns all the posts fom the data source'''
-    cursor.execute("""SELECT * FROM posts""")
-    posts = cursor.fetchall()
-    return posts
+    '''using ORM'''
+    try:
+        posts = db.query(models.Post).all()
+        return posts
+    except Exception as err:
+        return err
+    # cursor.execute("""SELECT * FROM posts""")
+    # posts = cursor.fetchall()
+    # return posts
     # return {"data": f"{posts_data}"}
 
 
@@ -105,8 +122,9 @@ def update_posts(id: int, post: Post):
 @app.get('/posts/latest')
 def get_latest_post():
     '''returns latest posts from the data source'''
-    post = posts_data[len(posts_data) - 1]  # indexing
-    return {"Latest Post": post}
+    cursor.execute("""SELECT * FROM posts ORDER BY created_at desc""")
+    latest_post = cursor.fetchone()
+    return {"data": latest_post}
 
 
 @app.get('/posts/{id}')
@@ -129,16 +147,23 @@ def get_postsById(id: int, response: Response):
 
 # POST METHODS
 @app.post('/posts', status_code=status.HTTP_201_CREATED)
-def create_post(post: Post):
+def create_post(post: Post, db: Session = Depends(get_db)):
     '''loads/appends the newly created posts to the data source'''
-    cursor.execute(
-        """INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING * """,
-        (post.title, post.content, post.published))
-    # for returning only one record which we created
-    new_post = cursor.fetchone()
-    # for pushing the new changes to the data source, for saving the created post
-    conn.commit()
+    '''using ORM'''
+    new_post = models.Post(**post.dict())
+    db.add(new_post)  # To add a new record to the Data Source
+    db.commit()
+    db.refresh(
+        new_post)  # To display the newly added record/post in Data Source
     return {"data": new_post}
+    # cursor.execute(
+    #     """INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING * """,
+    #     (post.title, post.content, post.published))
+    # # for returning only one record which we created
+    # new_post = cursor.fetchone()
+    # # for pushing the new changes to the data source, for saving the created post
+    # conn.commit()
+    # return {"data": new_post}
     # post_dict = post.dict()
     # post_dict['id'] = randrange(0, 10000)
     # posts_data.append(post_dict)

@@ -201,3 +201,14 @@ def delete_posts(id: int, db: Session = Depends(get_db)):
         return Response(status_code=status.HTTP_204_NO_CONTENT)
     except Exception as err:
         return err
+
+
+@app.post('/users',
+          status_code=status.HTTP_201_CREATED,
+          response_model=UserOut)
+def create_user(user: UserCreate, db: Session = Depends(get_db)):
+    new_user = models.User(**user.dict())
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user

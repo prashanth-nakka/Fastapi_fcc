@@ -75,18 +75,25 @@ async def root():
 
 
 # Testing_route(sqlalchemy)
-@app.get('/sqlalchemy')
-def test_db(db: Session = Depends(get_db)):
-    return {"status": "Success"}
+# @app.get('/sqlalchemy')
+# def test_db(db: Session = Depends(get_db)):
+#     posts = db.query(models.Post).all()
+#     return {"data": posts}
 
 
 # GET METHODS
 @app.get('/posts')
-def get_posts():
+def get_posts(db: Session = Depends(get_db)):
     '''returns all the posts fom the data source'''
-    cursor.execute("""SELECT * FROM posts""")
-    posts = cursor.fetchall()
-    return posts
+    '''using ORM'''
+    try:
+        posts = db.query(models.Post).all()
+        return posts
+    except Exception as err:
+        return err
+    # cursor.execute("""SELECT * FROM posts""")
+    # posts = cursor.fetchall()
+    # return posts
     # return {"data": f"{posts_data}"}
 
 

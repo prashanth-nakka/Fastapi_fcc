@@ -31,7 +31,7 @@ class Post(BaseModel):
     content: str
     published: bool = True
     # optional fileds
-    rating: Optional[int] = None
+    # rating: Optional[int] = None
 
 
 # Sample data source for CRUD operations
@@ -121,11 +121,19 @@ def get_postsById(id: int, response: Response):
 @app.post('/posts', status_code=status.HTTP_201_CREATED)
 def create_post(post: Post):
     '''loads/appends the newly created posts to the data source'''
-    post_dict = post.dict()
-    post_dict['id'] = randrange(0, 10000)
-    posts_data.append(post_dict)
-    # print(post.dict())   for printing in the form of DICT() Format
-    return {"new_post": post_dict}
+    cursor.execute(
+        """INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING * """,
+        (post.title, post.content, post.published))
+    # for returning only one record which we created
+    new_post = cursor.fetchone()
+    # for pushing the new changes to the data source, for saving the created post
+    conn.commit()
+    return {"data": new_post}
+    # post_dict = post.dict()
+    # post_dict['id'] = randrange(0, 10000)
+    # posts_data.append(post_dict)
+    # # print(post.dict())   for printing in the form of DICT() Format
+    # return {"new_post": post_dict}
 
 
 # DELETE METHODS

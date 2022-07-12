@@ -142,9 +142,12 @@ def create_post(post: Post):
 @app.delete('/posts/{id}', status_code=status.HTTP_204_NO_CONTENT)
 def delete_posts(id: int):
     '''Deletes the Posts based on the Id provided'''
-    index = find_index_id(id)
-    if not index:
+    cursor.execute(""" DELETE FROM posts WHERE id = %s RETURNING * """,
+                   (str(id), ))
+    delete_post = cursor.fetchone()
+    # *** Committing the changes to Data Source
+    conn.commit()
+    if not delete_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Post: {id} does not exists")
-    posts_data.pop(index)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

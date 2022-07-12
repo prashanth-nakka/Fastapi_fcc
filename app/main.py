@@ -84,14 +84,22 @@ def get_posts():
 # UPDATE METHODS
 @app.put('/posts/{id}')
 def update_posts(id: int, post: Post):
-    index = find_index_id(id)
-    if not index:
+    '''Updates the existing post by the specified id'''
+    cursor.execute(
+        """ UPDATE posts SET title = %s, content = %s, published = %s WHERE id = %s RETURNING * """,
+        (
+            post.title,
+            post.content,
+            post.published,
+            str(id),
+        ))
+    updated_post = cursor.fetchone()
+    # for updating in the Data Source
+    conn.commit()
+    if not updated_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Post: {id} does not exists")
-    post_dict = post.dict()
-    post_dict['id'] = id
-    posts_data[index] = post_dict
-    return {"data": post_dict}
+    return {"data": updated_post}
 
 
 @app.get('/posts/latest')

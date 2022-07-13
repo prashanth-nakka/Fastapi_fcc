@@ -57,3 +57,8 @@ class UserOut(BaseModel):
         '''Pydantic's orm_mode will tell the Pydantic model to read the data even if it is not a dict,
            but an ORM model '''
         orm_mode = True
+
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str

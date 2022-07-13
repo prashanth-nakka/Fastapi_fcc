@@ -10,7 +10,7 @@ from psycopg2.extras import RealDictCursor
 import time
 from . import models
 from .database import engine
-from .routers import posts, users
+from .routers import posts, users, auth
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -34,10 +34,12 @@ while True:
         time.sleep(2)
 
 # Routers
-'''importing posts routers'''
-app.include_router(posts.router)
+'''importing login router'''
+app.include_router(auth.router)
 '''importing users routers'''
 app.include_router(users.router)
+'''importing posts routers'''
+app.include_router(posts.router)
 
 #--------------------------------Commented Code-----------------------------------------
 # Sample data source for CRUD operations

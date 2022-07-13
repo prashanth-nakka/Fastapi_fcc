@@ -4,12 +4,12 @@ from .. import models, schemas, database
 from typing import List
 '''Post Routes'''
 
-router = APIRouter()
+router = APIRouter(prefix='/posts', tags=['Posts'])
 
 
 # GET METHODS
 #'''Get All Posts'''
-@router.get('/posts', response_model=List[schemas.user_response])
+@router.get('/', response_model=List[schemas.user_response])
 def get_posts(db: Session = Depends(database.get_db)):
     '''returns all the posts fom the data source'''
     # cursor.execute("""SELECT * FROM posts""")
@@ -33,7 +33,7 @@ def get_posts(db: Session = Depends(database.get_db)):
 
 
 # '''Get Posts by Id'''
-@router.get('/posts/{id}', response_model=schemas.user_response)
+@router.get('/{id}', response_model=schemas.user_response)
 def get_postsById(id: int,
                   response: Response,
                   db: Session = Depends(database.get_db)):
@@ -93,7 +93,7 @@ def create_post(post: schemas.CreatePost,
 
 # UPDATE METHODS
 # '''Updates the existing post by the specified id'''
-@router.put('/posts/{id}', response_model=schemas.user_response)
+@router.put('/{id}', response_model=schemas.user_response)
 def update_posts(id: int,
                  post: schemas.UpdatePost,
                  db: Session = Depends(database.get_db)):
@@ -125,7 +125,7 @@ def update_posts(id: int,
 
 # DELETE METHODS
 # '''Deletes the Posts by the Id provided'''
-@router.delete('/posts/{id}', status_code=status.HTTP_204_NO_CONTENT)
+@router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT)
 def delete_posts(id: int, db: Session = Depends(database.get_db)):
     '''Deletes the Posts based on the Id provided'''
     # cursor.execute(""" DELETE FROM posts WHERE id = %s RETURNING * """,

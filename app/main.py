@@ -1,15 +1,15 @@
 # from typing import Optional
 # from random import randrange
-from typing import List
-from fastapi import Depends, FastAPI, Response, status, HTTPException
+# from typing import List
+# from .utlis import hash
+# from .schemas import *
+# from sqlalchemy.orm import Session
+from fastapi import FastAPI
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
-from .schemas import *
-from sqlalchemy.orm import Session
 from . import models
-from .utlis import hash
-from .database import engine, get_db
+from .database import engine
 from .routers import posts, users
 
 models.Base.metadata.create_all(bind=engine)
